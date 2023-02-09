@@ -4,9 +4,11 @@
   "license": "MIT",
   "version": "1.0.0",
   "peerDependencies": {
-    "vanilla-cookieconsent": "@latest"
+    "@hotwired/stimulus": "^3.0.0",
+    "vanilla-cookieconsent": "^2.8"
   },
   "devDependencies": {
-    "vanilla-cookieconsent": "@latest"
+    "@hotwired/stimulus": "^3.0.0",
+    "vanilla-cookieconsent": "^2.8"
   }
 }

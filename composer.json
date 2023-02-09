@@ -2,6 +2,9 @@
     "name": "nordlund/cookie-consent-bundle",
     "type": "symfony-bundle",
     "description": "",
+    "keywords": [
+        "symfony-ux"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -13,10 +16,11 @@
         "php": ">=7.4",
         "symfony/config": "^5.4 | ^6.0",
         "symfony/dependency-injection": "^5.4 | ^6.0",
-        "symfony/form": "^5.4 | ^6.0",
         "symfony/http-kernel": "^5.4 | ^6.0"
     },
-    "require-dev": {},
+    "require-dev": {
+        "symfony/webpack-encore-bundle": "^1.11"
+    },
     "autoload": {
         "psr-4": {
             "Nordlund\\CookieConsentBundle\\": "src/"
@@ -26,6 +30,10 @@
         "psr-4": {
             "Nordlund\\CookieConsentBundle\\Tests\\": "tests/"
         }
+    },
+    "conflict": {
+        "symfony/flex": "<1.13",
+        "symfony/webpack-encore-bundle": "<1.11"
     },
     "minimum-stability": "stable"
 }
