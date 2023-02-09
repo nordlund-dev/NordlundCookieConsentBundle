@@ -11,7 +11,10 @@
 
 namespace Nordlund\CookieConsentBundle\DependencyInjection;
 
+use Nordlund\CookieConsentBundle\Twig\NordlundCookieConsentTwigExtension;
+use Nordlund\CookieConsentBundle\Twig\NordlundCookieConsentTwigRuntime;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -19,10 +22,30 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  * 
  * @internal
  */
+
 class NordlundCookieConsentExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
+        $configuration = new Configuration();
+		$mergedConfig = $this->processConfiguration($configuration,$configs);
 
+        $def = (new Definition(NordlundCookieConsentTwigExtension::class))
+            ->setPublic(true)
+            ->addTag('twig.extension')
+        ;
+
+        $def2 = (new Definition(NordlundCookieConsentTwigRuntime::class))
+            ->setPublic(true)
+            ->setAutowired(true)
+            ->setArgument('$configs', $mergedConfig['configurations'])
+            ->setArgument('$guiOptions', $mergedConfig['gui_options'])
+            ->addTag('twig.runtime')
+        ;
+
+        $container->addDefinitions([
+            'nordlund.cookie_consent.twig_extension' => $def,
+            'nordlund.cookie_consent.twig_extension_runtime' => $def2,
+        ]);
     }
 }

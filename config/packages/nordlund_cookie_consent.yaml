@@ -1,0 +1,33 @@
+nordlund_cookie_consent:
+    configurations:
+        default:
+            autoclear_cookies: true
+            page_scripts: true
+            mode: 'opt-in'
+            delay: 0
+            auto_language: ~
+            autorun: true
+            force_consent: false
+            hide_from_bots: true
+            remove_cookie_tables: false
+            cookie_name: 'cc_cookie'
+            cookie_expiration: 182
+            cookie_necessary_only_expiration: ~
+            cookie_domain: 'location.hostname'
+            cookie_path: '/'
+            cookie_same_site: 'lax'
+            use_rfc_cookie: false
+            revision: 0
+
+    gui_options:
+        default:
+            consent_modal:
+                layout: 'box'
+                position: 'bottom right'
+                transition: 'slide'
+                swap_buttons: false
+            
+            settings_modal:
+                layout: 'box'
+                position: 'left'
+                transition: 'slide'
