@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "neilbrayfield.php-docblocker",
+        "phproberto.vscode-php-getters-setters",
+        "bmewburn.vscode-intelephense-client",
+        "psioniq.psi-header"
+    ]
+}

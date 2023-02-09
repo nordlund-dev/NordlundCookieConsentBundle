@@ -1,0 +1,31 @@
+{
+    "name": "nordlund/cookie-consent-bundle",
+    "type": "symfony-bundle",
+    "description": "",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "NimZero",
+            "email": "contact@nimzero.fr"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "symfony/config": "^5.4 | ^6.0",
+        "symfony/dependency-injection": "^5.4 | ^6.0",
+        "symfony/form": "^5.4 | ^6.0",
+        "symfony/http-kernel": "^5.4 | ^6.0"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "Nordlund\\CookieConsentBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Nordlund\\CookieConsentBundle\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable"
+}
