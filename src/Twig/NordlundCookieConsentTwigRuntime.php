@@ -22,22 +22,115 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
 {
     private array $configs;
     private array $guiOptions;
+    private array $languages;
     private Request $request;
 
-    public function __construct(array $configs, array $guiOptions, RequestStack $requestStack)
+    public function __construct(array $configs, RequestStack $requestStack)
     {
-        $this->configs = $configs;
-        $this->guiOptions = $guiOptions;
+        $this->configs = $configs['configurations'];
+        $this->guiOptions = $configs['gui_options'];
+        $this->languages = $configs['languages'];
         $this->request = $requestStack->getCurrentRequest();
     }
 
-    public function isConsentConfigured(string $configName = 'default')
+    private function makeCookieTableHeaders(array $conf): string
+    {
+        $cookieTableHeaders = '';
+
+        foreach ($conf as $key => $value) {
+            $cookieTableHeaders .= sprintf("{%s: '%s'},", $key, $value);
+        }
+
+        return $cookieTableHeaders;
+    }
+
+    private function makeBlocks(array $blocks): string
+    {
+        $tmp = '';
+
+        foreach ($blocks as $block) {
+            $str = "{";
+
+            foreach ($block as $key => $value) {
+                if (is_string($value)) {
+                    $str .= "$key: '$value',";
+                }
+                elseif (is_array($value) && count($value) > 0) {
+
+                    if ($key === 'cookie_table') {
+                        $str .= "$key: [";
+
+                        foreach ($value as $subKey => $subValue) {
+                            $str .= '{';
+                            foreach ($subValue as $k => $v) {
+                                $str .= "$k: '$v',";
+                            }
+                            $str.='},';
+                        }
+
+                        $str .= "],";
+                    }
+                    else {
+                        $str .= "$key: {";
+
+                        foreach ($value as $subKey => $subValue) {
+                            $str .= "$subKey: '$subValue',";
+                        }
+
+                        $str .= "},";
+                    }
+                }
+            }
+
+            $tmp .= $str.'},';
+        }
+
+        return $tmp;
+    }
+
+    private function buildLanguages(): string
+    {
+        $languages = '';
+
+        foreach ($this->languages as $lang => $conf) {
+            $language = "'$lang': {consent_modal: {%s}, settings_modal: {%s}},";
+
+            $consent = "title: '%s', description: '%s', primary_btn: {text: '%s', role: '%s'}, secondary_btn: {text: '%s', role: '%s'},";
+            $consent = sprintf($consent,
+                $conf['consent_modal']['title'],
+                $conf['consent_modal']['description'],
+                $conf['consent_modal']['primary_btn']['text'],
+                $conf['consent_modal']['primary_btn']['role'],
+                $conf['consent_modal']['secondary_btn']['text'],
+                $conf['consent_modal']['secondary_btn']['role']
+            );
+
+            $settings = "title: '%s', save_settings_btn: '%s', accept_all_btn: '%s', reject_all_btn: '%s', close_btn_label: '%s', cookie_table_headers: [%s], blocks: [%s]";
+            $settings = sprintf($settings,
+                $conf['settings_modal']['title'],
+                $conf['settings_modal']['save_settings_btn'],
+                $conf['settings_modal']['accept_all_btn'],
+                $conf['settings_modal']['reject_all_btn'],
+                $conf['settings_modal']['close_btn_label'],
+                $this->makeCookieTableHeaders($conf['settings_modal']['cookie_table_headers']),
+                $this->makeBlocks($conf['settings_modal']['blocks'])
+            );
+
+            $language = sprintf($language, $consent, $settings);
+
+            $languages .= $language;
+        }
+
+        return $languages;
+    }
+
+    public function isConsentConfigured(string $configName = 'default'): bool
     {
         $config = $this->configs[$configName];
         return $this->request->cookies->has($config['cookie_name']);
     }
 
-    public function isConsentGranted(string $categorie, string $configName = 'default')
+    public function isConsentGranted(string $categorie, string $configName = 'default'): bool
     {
         $config = $this->configs[$configName];
 
@@ -52,6 +145,11 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
         return in_array($categorie, $cookie['categories']);
     }
 
+    public function scriptConsent(string $categorie):string
+    {
+        return sprintf('type="text/plain" data-cookiecategory="%s"', $categorie);
+    }
+
     public function cookieConsent(string $configName = 'default', string $guiOptionsName = 'default'): string
     {
         $config = $this->configs[$configName];
@@ -61,11 +159,9 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
         <script>
             window.addEventListener('load', function(){
 
-                // obtain plugin
-                var cc = initCookieConsent();
+                window.nordlundCookieConsent = initCookieConsent();
     
-                // run plugin with your configuration
-                cc.run({
+                nordlundCookieConsent.run({
                     autoclear_cookies: %s,
                     page_scripts: %s,
                     mode: '%s',
@@ -83,96 +179,11 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
                     cookie_same_site: '%s',
                     use_rfc_cookie: %s,
                     revision: %d,
-
-                    gui_options: {
-                        consent_modal: {
-                            layout: '%s',
-                            position: '%s',
-                            transition: '%s',
-                            swap_buttons: %s,
-                        },
-                        settings_modal: {
-                            layout: '%s',
-                            // position: '%s',
-                            transition: '%s',
-                        }
-                    },
-
-                    languages: {'en': {
-                        consent_modal: {
-                            title: 'We use cookies!',
-                            description: 'Hi, this website uses essential cookies to ensure its proper operation and tracking cookies to understand how you interact with it. The latter will be set only after consent. <button type="button" data-cc="c-settings" class="cc-link">Let me choose</button>',
-                            primary_btn: {
-                                text: 'Accept all',
-                                role: 'accept_all'              // 'accept_selected' or 'accept_all'
-                            },
-                            secondary_btn: {
-                                text: 'Reject all',
-                                role: 'accept_necessary'        // 'settings' or 'accept_necessary'
-                            }
-                        },
-                        settings_modal: {
-                            title: 'Cookie preferences',
-                            save_settings_btn: 'Save settings',
-                            accept_all_btn: 'Accept all',
-                            reject_all_btn: 'Reject all',
-                            close_btn_label: 'Close',
-                            cookie_table_headers: [
-                                {col1: 'Name'},
-                                {col2: 'Domain'},
-                                {col3: 'Expiration'},
-                                {col4: 'Description'}
-                            ],
-                            blocks: [
-                                {
-                                    title: 'Cookie usage 📢',
-                                    description: 'I use cookies to ensure the basic functionalities of the website and to enhance your online experience. You can choose for each category to opt-in/out whenever you want. For more details relative to cookies and other sensitive data, please read the full <a href="#" class="cc-link">privacy policy</a>.'
-                                }, {
-                                    title: 'Strictly necessary cookies',
-                                    description: 'These cookies are essential for the proper functioning of my website. Without these cookies, the website would not work properly',
-                                    toggle: {
-                                        value: 'necessary',
-                                        enabled: true,
-                                        readonly: true          // cookie categories with readonly=true are all treated as "necessary cookies"
-                                    }
-                                }, {
-                                    title: 'Performance and Analytics cookies',
-                                    description: 'These cookies allow the website to remember the choices you have made in the past',
-                                    toggle: {
-                                        value: 'analytics',     // your cookie category
-                                        enabled: false,
-                                        readonly: false
-                                    },
-                                    cookie_table: [             // list of all expected cookies
-                                        {
-                                            col1: '^_ga',       // match all cookies starting with "_ga"
-                                            col2: 'google.com',
-                                            col3: '2 years',
-                                            col4: 'description ...',
-                                            is_regex: true
-                                        },
-                                        {
-                                            col1: '_gid',
-                                            col2: 'google.com',
-                                            col3: '1 day',
-                                            col4: 'description ...',
-                                        }
-                                    ]
-                                }, {
-                                    title: 'Advertisement and Targeting cookies',
-                                    description: 'These cookies collect information about how you use the website, which pages you visited and which links you clicked on. All of the data is anonymized and cannot be used to identify you',
-                                    toggle: {
-                                        value: 'targeting',
-                                        enabled: false,
-                                        readonly: false
-                                    }
-                                }, {
-                                    title: 'More information',
-                                    description: 'For any queries in relation to our policy on cookies and your choices, please <a class="cc-link" href="#yourcontactpage">contact us</a>.',
-                                }
-                            ]
-                        }
-                    }}
+                    onFirstAction: nordlundCookieOnFirstAction,
+                    onAccept: nordlundCookieOnAccept,
+                    onChange: nordlundCookieOnChange,
+                    gui_options: {consent_modal: {layout: '%s',position: '%s',transition: '%s',swap_buttons: %s,},settings_modal: {layout: '%s',position: '%s',transition: '%s',}},
+                    languages: {%s}
                 });
             });
         </script>
@@ -203,7 +214,7 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
             $guiOption['settings_modal']['layout'],
             $guiOption['settings_modal']['position'],
             $guiOption['settings_modal']['transition'],
-            ''
+            $this->buildLanguages()
         );
 
         return $script;

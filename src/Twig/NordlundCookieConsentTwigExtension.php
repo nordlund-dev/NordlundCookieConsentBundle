@@ -25,6 +25,7 @@ class NordlundCookieConsentTwigExtension extends AbstractExtension
             new TwigFunction('cookie_consent', [NordlundCookieConsentTwigRuntime::class, 'cookieConsent'], ['is_safe' => ['html']]),
             new TwigFunction('is_consent_configured', [NordlundCookieConsentTwigRuntime::class, 'isConsentConfigured']),
             new TwigFunction('is_consent_granted', [NordlundCookieConsentTwigRuntime::class, 'isConsentGranted']),
+            new TwigFunction('scriptConsent', [NordlundCookieConsentTwigRuntime::class, 'scriptConsent'], ['is_safe' => ['html']]),
         ];
     }
 }

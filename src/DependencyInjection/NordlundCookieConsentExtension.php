@@ -22,7 +22,6 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  * 
  * @internal
  */
-
 class NordlundCookieConsentExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
@@ -30,22 +29,21 @@ class NordlundCookieConsentExtension extends Extension
         $configuration = new Configuration();
 		$mergedConfig = $this->processConfiguration($configuration,$configs);
 
-        $def = (new Definition(NordlundCookieConsentTwigExtension::class))
+        $twigExtension = (new Definition(NordlundCookieConsentTwigExtension::class))
             ->setPublic(true)
             ->addTag('twig.extension')
         ;
 
-        $def2 = (new Definition(NordlundCookieConsentTwigRuntime::class))
+        $twigRuntime = (new Definition(NordlundCookieConsentTwigRuntime::class))
             ->setPublic(true)
             ->setAutowired(true)
-            ->setArgument('$configs', $mergedConfig['configurations'])
-            ->setArgument('$guiOptions', $mergedConfig['gui_options'])
+            ->setArgument('$configs', $mergedConfig)
             ->addTag('twig.runtime')
         ;
 
         $container->addDefinitions([
-            'nordlund.cookie_consent.twig_extension' => $def,
-            'nordlund.cookie_consent.twig_extension_runtime' => $def2,
+            'nordlund.cookie_consent.twig_extension' => $twigExtension,
+            'nordlund.cookie_consent.twig_extension_runtime' => $twigRuntime,
         ]);
     }
 }

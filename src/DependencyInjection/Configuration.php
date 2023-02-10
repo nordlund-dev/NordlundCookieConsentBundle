@@ -82,7 +82,7 @@ class Configuration implements ConfigurationInterface
                                 ->defaultValue(182)
                             ->end() // cookie_expiration
 
-                            ->integerNode('cookie_necessary_only_expiration')
+                            ->scalarNode('cookie_necessary_only_expiration')
                                 ->defaultNull()
                             ->end() // cookie_necessary_only_expiration
 
@@ -169,8 +169,128 @@ class Configuration implements ConfigurationInterface
                     ->end()
                     ->end()
                 ->end() // gui_options
-            ->end()
-        ;
+            ->end();
+        
+            
+        $treeBuilder->getRootNode()
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->arrayNode('languages')
+                    ->useAttributeAsKey('name')
+                    ->arrayPrototype()
+                        ->children()
+                            ->scalarNode('name')
+                                ->defaultValue('en')
+                            ->end() // name
+
+                            ->arrayNode('consent_modal')
+                                ->addDefaultsIfNotSet()
+                                ->children()
+                                    ->scalarNode('title')
+                                        ->defaultValue('We use cookies!')
+                                    ->end() // title
+
+                                    ->scalarNode('description')
+                                        ->defaultValue('Hi, this website uses essential cookies to ensure its proper operation and tracking cookies to understand how you interact with it. The latter will be set only after consent. <button type="button" data-cc="c-settings" class="cc-link">Let me choose</button>')
+                                    ->end() // description
+
+                                    ->arrayNode('primary_btn')
+                                        ->addDefaultsIfNotSet()
+                                        ->children()
+                                            ->scalarNode('text')
+                                                ->defaultValue('Accept all')
+                                            ->end() // text
+
+                                            ->scalarNode('role')
+                                                ->defaultValue('accept_all')
+                                            ->end() // role
+                                        ->end()
+                                    ->end() // primary_btn
+
+                                    ->arrayNode('secondary_btn')
+                                        ->addDefaultsIfNotSet()
+                                        ->children()
+                                            ->scalarNode('text')
+                                                ->defaultValue('Reject all')
+                                            ->end() // text
+
+                                            ->scalarNode('role')
+                                                ->defaultValue('accept_necessary')
+                                            ->end() // role
+                                        ->end()
+                                    ->end() // secondary_btn
+                                ->end()
+                            ->end() // consent_modal
+
+                            ->arrayNode('settings_modal')
+                                ->addDefaultsIfNotSet()
+                                ->children()
+                                    ->scalarNode('title')
+                                        ->defaultValue('Cookie preferences')
+                                    ->end() // title
+
+                                    ->scalarNode('save_settings_btn')
+                                        ->defaultValue('Save settings')
+                                    ->end() // save_settings_btn
+
+                                    ->scalarNode('accept_all_btn')
+                                        ->defaultValue('Accept all')
+                                    ->end() // accept_all_btn
+
+                                    ->scalarNode('reject_all_btn')
+                                        ->defaultValue('Reject all')
+                                    ->end() // reject_all_btn
+
+                                    ->scalarNode('close_btn_label')
+                                        ->defaultValue('Close')
+                                    ->end() // close_btn_label
+
+                                    ->arrayNode('cookie_table_headers')
+                                        ->scalarPrototype()
+                                        ->end()
+                                    ->end() // cookie_table_headers
+
+                                    ->arrayNode('blocks')
+                                        ->arrayPrototype()
+                                        ->children()
+                                            ->scalarNode('title')
+                                            ->end() // title
+
+                                            ->scalarNode('description')
+                                            ->end() // description
+
+                                            ->arrayNode('toggle')
+                                                ->canBeUnset()
+                                                ->children()
+                                                    ->scalarNode('value')
+                                                    ->end() // value
+
+                                                    ->booleanNode('enabled')
+                                                        ->defaultFalse()
+                                                    ->end() // enabled
+
+                                                    ->booleanNode('readonly')
+                                                        ->defaultFalse()
+                                                    ->end() // readonly
+                                                ->end()
+                                            ->end() // toggle
+
+                                            ->arrayNode('cookie_table')
+                                                ->canBeUnset()
+                                                ->variablePrototype()
+                                                ->end()
+                                            ->end() // cookie_table
+                                        ->end()
+                                        ->end()
+                                    ->end()
+
+                                ->end()
+                            ->end() // settings_modal
+                        ->end()
+                    ->end()
+                    ->end()
+                ->end() // gui_options
+            ->end();
 
         return $treeBuilder;
 	}
