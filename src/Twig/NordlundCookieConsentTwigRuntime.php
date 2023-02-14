@@ -13,6 +13,7 @@ namespace Nordlund\CookieConsentBundle\Twig;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Extension\RuntimeExtensionInterface;
 
 /**
@@ -24,13 +25,15 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
     private array $guiOptions;
     private array $languages;
     private Request $request;
+    private UrlGeneratorInterface $urlGenerator;
 
-    public function __construct(array $configs, RequestStack $requestStack)
+    public function __construct(array $configs, RequestStack $requestStack, UrlGeneratorInterface $urlGenerator)
     {
         $this->configs = $configs['configurations'];
         $this->guiOptions = $configs['gui_options'];
         $this->languages = $configs['languages'];
         $this->request = $requestStack->getCurrentRequest();
+        $this->urlGenerator = $urlGenerator;
     }
 
     private function makeCookieTableHeaders(array $conf): string
@@ -83,6 +86,12 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
             }
 
             $tmp .= $str.'},';
+        }
+
+        preg_match_all("/!!route:([a-z0-9_-]+)!!/i", $tmp, $hashtweet);
+        foreach ($hashtweet[0] as $index => $ht){
+            $url = $this->urlGenerator->generate($hashtweet[1][$index]);
+            $tmp = str_replace($ht, $url, $tmp);
         }
 
         return $tmp;
