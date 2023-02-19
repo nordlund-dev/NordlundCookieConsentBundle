@@ -88,12 +88,6 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
             $tmp .= $str.'},';
         }
 
-        preg_match_all("/!!route:([a-z0-9_-]+)!!/i", $tmp, $hashtweet);
-        foreach ($hashtweet[0] as $index => $ht){
-            $url = $this->urlGenerator->generate($hashtweet[1][$index]);
-            $tmp = str_replace($ht, $url, $tmp);
-        }
-
         return $tmp;
     }
 
@@ -126,6 +120,12 @@ class NordlundCookieConsentTwigRuntime implements RuntimeExtensionInterface
             );
 
             $language = sprintf($language, $consent, $settings);
+
+            preg_match_all("/!!route:([a-z0-9_-]+)!!/i", $language, $hashtweet);
+            foreach ($hashtweet[0] as $index => $ht){
+                $url = $this->urlGenerator->generate($hashtweet[1][$index]);
+                $language = str_replace($ht, $url, $language);
+            }    
 
             $languages .= $language;
         }
